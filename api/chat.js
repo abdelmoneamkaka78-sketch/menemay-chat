@@ -1,5 +1,4 @@
-export default async function handler(req, res) {
-  // التأكد من أن الطلب هو POST
+module.exports = async function (req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -11,7 +10,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid messages format' });
     }
 
-    // الاتصال المباشر بـ OpenAI API باستخدام المفتاح السري المخزن في Vercel
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -19,7 +17,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // يمكنك تغيير النموذج حسب رغبتك (مثل gpt-4o أو gpt-3.5-turbo)
+        model: 'gpt-4o-mini',
         messages: messages,
         temperature: 0.7
       })
@@ -33,12 +31,10 @@ export default async function handler(req, res) {
     const data = await response.json();
     const reply = data.choices[0].message.content;
 
-    // إرسال رد الذكاء الاصطناعي إلى الواجهة الأمامية
     return res.status(200).json({ reply: reply });
 
   } catch (error) {
     console.error('Server error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-}
-
+};
