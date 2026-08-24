@@ -896,7 +896,8 @@
                     appendMessage('ai', aiResponseText);
                 } catch (error) {
                     showLoading(false);
-                    appendMessage('error', dict[currentLang].errorFetch);
+                    const errorDetail = error.message ? ` (${error.message})` : '';
+                    appendMessage('error', dict[currentLang].errorFetch + errorDetail);
                 }
             };
 
@@ -947,7 +948,7 @@
             }
 
             async function sendMessageToBackendAPI(messagesArray) {
-                const API_ENDPOINT = '/api/chat'; // هذا الرابط سيتوجّه تلقائياً إلى ملف api/chat.js على Vercel
+                const API_ENDPOINT = '/api/chat';
                 
                 const response = await fetch(API_ENDPOINT, {
                     method: 'POST',
@@ -957,14 +958,17 @@
                     body: JSON.stringify({ messages: messagesArray })
                 });
 
+                const data = await response.json().catch(() => ({}));
+
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    console.error('Server API Error:', data);
+                    throw new Error(data.error || `HTTP Status ${response.status}`);
                 }
-                
-                const data = await response.json();
-                return data.reply; // إرجاع رد الذكاء الاصطناعي القادم من الخادم الآمن
+
+                return data.reply;
             }
         });
     </script>
 </body>
 </html>
+
